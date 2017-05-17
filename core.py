@@ -167,7 +167,7 @@ class Record(object):
         # Parsing VCF format
         if options.args['inputformat'].upper() == 'VCF':
             cols = line.strip().split("\t")
-            self.chrom = cols[0]
+            self.orig_chrom = self.chrom = cols[0]
             if self.chrom.startswith('chr'): self.chrom = self.chrom[3:]
             self.pos = int(cols[1])
             self.id = cols[2]
@@ -189,7 +189,7 @@ class Record(object):
         if options.args['inputformat'].upper() == 'TXT':
             cols = line.strip().split("\t")
             self.id = cols[0]
-            self.chrom = cols[1]
+            self.orig_chrom = self.chrom = cols[1]
             self.pos = int(cols[2])
             self.ref = cols[3]
             self.alts = []
@@ -299,7 +299,7 @@ class Record(object):
         if outformat.upper() == 'VCF':
 
             # Creating first part of the VCF record (up to FILTER field)
-            record = self.chrom + '\t' + str(self.pos) + '\t' + self.id + '\t' + self.ref + '\t' + ",".join(
+            record = self.orig_chrom + '\t' + str(self.pos) + '\t' + self.id + '\t' + self.ref + '\t' + ",".join(
                 outalts) + '\t' + self.qual + '\t' + self.filter + '\t'
 
             # Preparing components of the String to be added to the INFO field
@@ -344,7 +344,7 @@ class Record(object):
             c = 0
             for variant in outvariants:
                 # Creating first part of the TSV record (up to FILTER field)
-                record = self.id + '\t' + self.chrom + '\t' + str(self.pos) + '\t' + self.ref + '\t' + outalts[
+                record = self.id + '\t' + self.orig_chrom + '\t' + str(self.pos) + '\t' + self.ref + '\t' + outalts[
                     c] + '\t' + self.qual + '\t' + self.filter
 
                 # Number of transcripts overlapping with the variant
