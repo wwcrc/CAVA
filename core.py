@@ -300,7 +300,7 @@ class Record(object):
 
             # Creating first part of the VCF record (up to FILTER field)
             record = self.orig_chrom + '\t' + str(self.pos) + '\t' + self.id + '\t' + self.ref + '\t' + ",".join(
-                outalts) + '\t' + self.qual + '\t' + self.filter + '\t'
+                outalts) + '\t' + self.qual + '\t' + self.filter
 
             # Preparing components of the String to be added to the INFO field
             flags = []
@@ -327,9 +327,12 @@ class Record(object):
 
             # Adding second part of the VCF record (starting from the INFO field)
             if self.info == '.' or self.info == '':
-                record += added + '\t' + "\t".join(self.rest)
+                record += '\t' + added
             else:
-                record += self.info + ';' + added + '\t' + "\t".join(self.rest)
+                record += '\t' + self.info + ';' + added
+
+            if len(self.rest) > 0:
+                record += '\t' + "\t".join(self.rest)
 
             # Writing record to the output file
             if stdout:
