@@ -54,7 +54,7 @@ def processData(options, datafile, IDs):
 
     sys.stdout.write('\rProcessing SNPs on all chrs ... OK')
     sys.stdout.flush()
-    print ''
+    print('')
     datafile.close()
     outfile.close()
     return counter
@@ -83,16 +83,16 @@ def printMetaData(datafile):
         line = line.strip()
         if line.startswith('#'):
             if line.startswith('##dbSNP_BUILD_ID='):
-                print 'Input file build: '+line[17:]
+                print('Input file build: '+line[17:])
                 ret = int(line[17:])
-            if line.startswith('##reference='): print 'Reference: '+line[12:]+'\n'
+            if line.startswith('##reference='): print('Reference: '+line[12:]+'\n')
         else:
             return ret
 
 #######################################################################################################################
 
 # Version
-version = '1.2.3'
+version = '2.0.0'
 
 descr =  'CAVA dbsnp_db v' + version
 epilog = '\nExample usage: CAVA-{}/dbsnp_db -d 00-All.vcf.gz -s 138 -o out\n\n'.format(version)
@@ -106,39 +106,39 @@ parser.add_option('-d', "--data", default=None, dest='data', action='store', hel
 
 # Check options
 if options.release is None:
-    print '\nError: no dbSNP release specified'
-    print 'Please use option -s to specify dbSNP release version\n'
+    print('\nError: no dbSNP release specified')
+    print('Please use option -s to specify dbSNP release version\n')
     quit()
 if options.data is None:
-    print '\nError: no 00-All.vcf.gz data file specified'
-    print 'Please use option -d to specify path to data file\n'
+    print('\nError: no 00-All.vcf.gz data file specified')
+    print('Please use option -d to specify path to data file\n')
     quit()
 if not os.path.isfile(options.data):
-    print '\nError: 00-All.vcf.gz file (' + options.data + ') cannot be found.\n'
+    print('\nError: 00-All.vcf.gz file (' + options.data + ') cannot be found.\n')
     quit()
 
 # Print out version information
-print "\n---------------------------------------------------------------------------------------"
-print 'CAVA ' + version + ' dbSNP database preparation tool (dbsnp_db) is now running.'
-print 'Started: ', datetime.datetime.now(), '\n'
+print("\n---------------------------------------------------------------------------------------")
+print('CAVA ' + version + ' dbSNP database preparation tool (dbsnp_db) is now running.')
+print('Started: ', datetime.datetime.now(), '\n')
 
 # Open data fie for reading
-datafile = gzip.open(options.data, 'r')
+datafile = gzip.open(options.data, 'rt')
 
 # Print out meta data
 build = printMetaData(datafile)
 datafile.seek(0)
 if int(options.release) > build:
-    print 'Error: requested release must be <=' + str(build) + '\n'
+    print('Error: requested release must be <=' + str(build) + '\n')
     quit()
 
 # Print out info
-print 'Requested dbSNP release: ' + str(options.release)
+print('Requested dbSNP release: ' + str(options.release))
 IDs = []
 if options.input is not None:
     IDs = readIDs(options.input)
-    print '\nInput file contains ' + str(len(IDs)) + ' dbSNP IDs to be included in the database'
-print ''
+    print('\nInput file contains ' + str(len(IDs)) + ' dbSNP IDs to be included in the database')
+print('')
 
 # Create compressed output file
 N = processData(options, datafile, IDs)
@@ -150,13 +150,13 @@ indexFile(options)
 os.remove(options.output)
 
 # Print out summary information
-print '\nA total of ' + str(N) + ' SNPs have been retrieved\n'
-print '---------------------'
-print 'Output files created:'
-print '---------------------'
-print options.output + '.gz (SNP database)'
-print options.output + '.gz.tbi (index file)'
-print ''
-print 'CAVA dbsnp_db successfully finished: ', datetime.datetime.now()
-print "---------------------------------------------------------------------------------------\n"
+print('\nA total of ' + str(N) + ' SNPs have been retrieved\n')
+print('---------------------')
+print('Output files created:')
+print('---------------------')
+print(options.output + '.gz (SNP database)')
+print(options.output + '.gz.tbi (index file)')
+print('')
+print('CAVA dbsnp_db successfully finished: ', datetime.datetime.now())
+print("---------------------------------------------------------------------------------------\n")
 
