@@ -4,7 +4,7 @@ from optparse import OptionParser
 from ensembldb import main
 
 # Version
-version = '1.2.3'
+version = '2.0.0'
 
 # Command line argument parsing
 descr = 'CAVA ensembl_db v' + version
