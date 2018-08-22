@@ -1,6 +1,3 @@
-
-from __future__ import division
-
 import datetime
 import gzip
 import logging
@@ -9,20 +6,20 @@ import os
 import sys
 import pysam
 
-import core
+from . import core
 from cava_.data import Ensembl
 from cava_.data import Reference
 from cava_.data import dbSNP
-from core import Options
-from core import Record
+from .core import Options
+from .core import Record
 
 
 # Printing out welcome meassage
 def printStartInfo(ver):
     starttime = datetime.datetime.now()
-    print "\n-----------------------------------------------------------------------"
-    print 'CAVA (Clinical Annotation of VAriants) ' + ver + ' is now running.'
-    print 'Started: ', str(starttime), '\n'
+    print("\n-----------------------------------------------------------------------")
+    print('CAVA (Clinical Annotation of VAriants) ' + ver + ' is now running.')
+    print('Started: ', str(starttime), '\n')
     return starttime
 
 
@@ -32,12 +29,12 @@ def printInputFileNames(copts, options):
         outfn = copts.output + '.vcf'
     else:
         outfn = copts.output + '.txt'
-    print 'Configuration file:  ' + copts.conf
-    print 'Input file (' + options.args['inputformat'] + '):    ' + copts.input
-    print 'Output file (' + options.args['outputformat'] + '):   ' + outfn
-    if options.args['logfile']:  print 'Log file:            ' + copts.output + '.log'
+    print('Configuration file:  ' + copts.conf)
+    print('Input file (' + options.args['inputformat'] + '):    ' + copts.input)
+    print('Output file (' + options.args['outputformat'] + '):   ' + outfn)
+    if options.args['logfile']:  print('Log file:            ' + copts.output + '.log')
     if copts.threads > 1:
-        print '\nMultithreading:      ' + str(copts.threads) + ' threads'
+        print('\nMultithreading:      ' + str(copts.threads) + ' threads')
 
     if options.args['logfile']:
         logging.info('Configuration file - ' + copts.conf)
@@ -52,7 +49,7 @@ def printInputFileNames(copts, options):
 
 # Printing out number of records in the input file
 def printNumOfRecords(numOfRecords):
-    print '\nInput file contains ' + str(numOfRecords) + ' records to annotate.\n'
+    print('\nInput file contains ' + str(numOfRecords) + ' records to annotate.\n')
 
 
 # Initializing progress information
@@ -73,7 +70,7 @@ def printProgressInfo(counter, numOfRecords):
 def finalizeProgressInfo():
     sys.stdout.write('\rAnnotating variants ... 100.0%')
     sys.stdout.flush()
-    print ' - Done.'
+    print(' - Done.')
 
 
 # Printing out goodbye message
@@ -83,11 +80,11 @@ def printEndInfo(options, copts, starttime):
         outfn = copts.output + '.vcf'
     else:
         outfn = copts.output + '.txt'
-    print '\n(Size of output file: ' + str(round(os.stat(outfn).st_size / 1000, 1)) + ' Kbyte)'
-    print '\nCAVA (Clinical Annotation of VAriants) successfully finished.'
-    print 'Ended: ', str(endtime)
-    print 'Total runtime: '+str(endtime-starttime)
-    print "-----------------------------------------------------------------------\n"
+    print('\n(Size of output file: ' + str(round(os.stat(outfn).st_size / 1000, 1)) + ' Kbyte)')
+    print('\nCAVA (Clinical Annotation of VAriants) successfully finished.')
+    print('Ended: ', str(endtime))
+    print('Total runtime: '+str(endtime-starttime))
+    print("-----------------------------------------------------------------------\n")
     if options.args['logfile']:
         logging.info('100% of records annotated.')
         if not copts.stdout: logging.info('Output file = ' + str(round(os.stat(outfn).st_size / 1000, 1)) + ' Kbyte')
@@ -100,7 +97,7 @@ def findFileBreaks(inputf, threads):
     started = False
     counter = 0
 
-    if inputf.endswith('.gz'): infile = gzip.open(inputf, 'r')
+    if inputf.endswith('.gz'): infile = gzip.open(inputf, 'rt')
     else: infile = open(inputf)
 
     for line in infile:
@@ -123,7 +120,7 @@ def findFileBreaks(inputf, threads):
 def readHeader(inputfn):
     ret = []
 
-    if inputfn.endswith('.gz'): infile = gzip.open(inputfn, 'r')
+    if inputfn.endswith('.gz'): infile = gzip.open(inputfn, 'rt')
     else: infile = open(inputfn)
 
     for line in infile:
@@ -197,7 +194,7 @@ class SingleJob(multiprocessing.Process):
 
         # Input file
         if copts.input.endswith('.gz'):
-            self.infile = gzip.open(copts.input, 'r')
+            self.infile = gzip.open(copts.input, 'rt')
         else:
             self.infile = open(copts.input)
 
@@ -310,14 +307,14 @@ def run(copts, version, default_config_file):
 
     # Check if input and configuration files exist
     if copts.conf is None:
-        print '\nError: no configuration file specified.'
-        print 'Please use option -c or add the absolute path to the default_config_path file.\n'
+        print('\nError: no configuration file specified.')
+        print('Please use option -c or add the absolute path to the default_config_path file.\n')
         quit()
     if not os.path.isfile(copts.conf):
-        print '\nError: configuration file (' + copts.conf + ') cannot be found.\n'
+        print('\nError: configuration file (' + copts.conf + ') cannot be found.\n')
         quit()
     if not os.path.isfile(copts.input):
-        print '\nError: input file (' + copts.input + ') cannot be found.\n'
+        print('\nError: input file (' + copts.input + ') cannot be found.\n')
         quit()
 
     # Reading options from configuration file

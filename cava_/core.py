@@ -5,7 +5,7 @@
 #######################################################################################################################
 
 
-from __future__ import division
+
 import os
 import logging
 import gzip
@@ -342,7 +342,7 @@ class Record(object):
 
             # Writing record to the output file
             if stdout:
-                print '\t'.join(record)
+                print('\t'.join(record))
             else:
                 outfile.write('\t'.join(record) + '\n')
 
@@ -381,7 +381,7 @@ class Record(object):
 
                     # Writing record to the output file
                     if stdout:
-                        print record + rest
+                        print(record + rest)
                     else:
                         outfile.write(record + rest + '\n')
 
@@ -748,13 +748,13 @@ class Options(object):
             line = line.strip()
             if line.startswith('@'):
                 key = line[1:line.index('=')].strip()
-                if key in self.defs.keys():
+                if key in list(self.defs.keys()):
                     (typeofvar, default) = self.defs[key]
                     if typeofvar == 'string': self.args[key] = line[line.find('=') + 1:].strip()
                     if typeofvar == 'list': self.args[key] = line[line.find('=') + 1:].strip().split(',')
                     if typeofvar == 'boolean': self.args[key] = (line[line.find('=') + 1:].strip().upper() == 'TRUE')
-        for key, (typeofvar, default) in self.defs.iteritems():
-            if not key in self.args.keys(): self.args[key] = default
+        for key, (typeofvar, default) in self.defs.items():
+            if not key in list(self.args.keys()): self.args[key] = default
 
 
 #######################################################################################################################            
@@ -764,7 +764,7 @@ class Options(object):
 # Reading gene, transcript or snp list from file
 def readSet(options, tag):
     ret = set()
-    if tag in options.args.keys() and not (options.args[tag] == '' or options.args[tag] == '.'):
+    if tag in list(options.args.keys()) and not (options.args[tag] == '' or options.args[tag] == '.'):
         for line in open(options.args[tag]):
             line = line.strip()
             if line == '' or line == '.': continue
@@ -807,7 +807,7 @@ def writeHeader(options, header, outfile, stdout):
     if options.args['outputformat'] == 'VCF':
         if header == '':
             if stdout:
-                print '##fileformat=VCFv4.1\n' + dateline + '\n' + headerinfo + '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO'
+                print('##fileformat=VCFv4.1\n' + dateline + '\n' + headerinfo + '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO')
             else:
                 outfile.write('##fileformat=VCFv4.1\n' + dateline + '\n' + headerinfo + '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n')
         else:
@@ -821,7 +821,7 @@ def writeHeader(options, header, outfile, stdout):
                     continue
                 headerm.append(x)
             if stdout:
-                print startline + '\n' + dateline + '\n' + headerinfo + '\n'.join(headerm)+'\n'
+                print(startline + '\n' + dateline + '\n' + headerinfo + '\n'.join(headerm)+'\n')
             else:
                 outfile.write(startline + '\n' + dateline + '\n' + headerinfo + '\n'.join(headerm)+'\n')
 
@@ -845,7 +845,7 @@ def writeHeader(options, header, outfile, stdout):
             str += '\tDBSNP'
 
         if stdout:
-            print str
+            print(str)
         else:
             outfile.write(str + '\n')
 
@@ -854,7 +854,7 @@ def writeHeader(options, header, outfile, stdout):
 def countRecords(filename):
     ret = 0
     if filename.endswith('.gz'):
-        inputf = gzip.open(filename, 'r')
+        inputf = gzip.open(filename, 'rt')
     else:
         inputf = open(filename)
     for line in inputf:
@@ -868,10 +868,10 @@ def checkOptions(options):
     # Checking if @inputformat was given correct value
     str = options.args['inputformat'].upper()
     if not (str == 'VCF' or str == 'TXT'):
-        print 'ERROR: incorrect value of the tag @inputformat.'
-        print '(Allowed values: \'VCF\' or \'TXT\')'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: incorrect value of the tag @inputformat.')
+        print('(Allowed values: \'VCF\' or \'TXT\')')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('Incorrect value of the tag @inputformat.')
             logging.info('No output file written. CAVA quit.')
@@ -880,10 +880,10 @@ def checkOptions(options):
     # Checking if @outputformat was given correct value
     str = options.args['outputformat'].upper()
     if not (str == 'VCF' or str == 'TSV'):
-        print 'ERROR: incorrect value of the tag @outputformat.'
-        print '(Allowed values: \'VCF\' or \'TSV\')'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: incorrect value of the tag @outputformat.')
+        print('(Allowed values: \'VCF\' or \'TSV\')')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('Incorrect value of the tag @outputformat.')
             logging.info('No output file written. CAVA quit.')
@@ -893,10 +893,10 @@ def checkOptions(options):
     str = options.args['type'].upper()
     if not (
                                     str == 'ALL' or str == 'SUBSTITUTION' or str == 'INDEL' or str == 'INSERTION' or str == 'DELETION' or str == 'COMPLEX'):
-        print 'ERROR: incorrect value of the tag @type.'
-        print '(Allowed values: \'all\', \'substitution\', \'indel\', \'insertion\', \'deletion\' or \'complex\')'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: incorrect value of the tag @type.')
+        print('(Allowed values: \'all\', \'substitution\', \'indel\', \'insertion\', \'deletion\' or \'complex\')')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('Incorrect value of the tag @type.')
             logging.info('No output file written. CAVA quit.')
@@ -905,10 +905,10 @@ def checkOptions(options):
     # Checking if @ssrange was given correct value
     ssrange = int(options.args['ssrange'])
     if not ssrange >= 6:
-        print 'ERROR: incorrect value of the tag @ssrange.'
-        print '(Minimum value allowed is 6.)'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: incorrect value of the tag @ssrange.')
+        print('(Minimum value allowed is 6.)')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('Incorrect value of the tag @ssrange.')
             logging.info('No output file written. CAVA quit.')
@@ -917,10 +917,10 @@ def checkOptions(options):
     # Checking if @ontology was given correct value
     str = options.args['ontology'].upper()
     if not (str == 'CLASS' or str == 'SO' or str == 'BOTH'):
-        print 'ERROR: incorrect value of the tag @ontology.'
-        print '(Allowed values: \'CLASS\' or \'SO\' or \'both\')'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: incorrect value of the tag @ontology.')
+        print('(Allowed values: \'CLASS\' or \'SO\' or \'both\')')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('Incorrect value of the tag @ontology.')
             logging.info('No output file written. CAVA quit.')
@@ -928,9 +928,9 @@ def checkOptions(options):
 
     # Checking if @reference file exists
     if not os.path.isfile(options.args['reference']):
-        print 'ERROR: the file given as @reference does not exist.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the file given as @reference does not exist.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The file given as @reference does not exist.')
             logging.info('No output file written. CAVA quit.')
@@ -938,9 +938,9 @@ def checkOptions(options):
 
     # Checking if @reference index file exists
     if not os.path.isfile(options.args['reference'] + '.fai'):
-        print 'ERROR: the .fa.fai index file for @reference is not found.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the .fa.fai index file for @reference is not found.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The .fa.fai index file for @reference is not found.')
             logging.info('No output file written. CAVA quit.')
@@ -949,9 +949,9 @@ def checkOptions(options):
     # Checking if @ensembl file exists
     if not (options.args['ensembl'] == '.' or options.args['ensembl'] == '') and not os.path.isfile(
             options.args['ensembl']):
-        print 'ERROR: the file given as @ensembl does not exist.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the file given as @ensembl does not exist.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The file given as @ensembl does not exist.')
             logging.info('No output file written. CAVA quit.')
@@ -960,9 +960,9 @@ def checkOptions(options):
     # Checking if @ensembl index file exists
     if not (options.args['ensembl'] == '.' or options.args['ensembl'] == '') and not os.path.isfile(
                     options.args['ensembl'] + '.tbi'):
-        print 'ERROR: the .gz.tbi index file for @ensembl is not found.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the .gz.tbi index file for @ensembl is not found.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The .gz.tbi index file for @ensembl is not found.')
             logging.info('No output file written. CAVA quit.')
@@ -970,9 +970,9 @@ def checkOptions(options):
 
     # Checking if @dbsnp file exists
     if not (options.args['dbsnp'] == '.' or options.args['dbsnp'] == '') and not os.path.isfile(options.args['dbsnp']):
-        print 'ERROR: the file given as @dbsnp does not exist.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the file given as @dbsnp does not exist.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The file given as @dbsnp does not exist.')
             logging.info('No output file written. CAVA quit.')
@@ -981,9 +981,9 @@ def checkOptions(options):
     # Checking if @dbsnp index file exists
     if not (options.args['dbsnp'] == '.' or options.args['dbsnp'] == '') and not os.path.isfile(
                     options.args['dbsnp'] + '.tbi'):
-        print 'ERROR: the .gz.tbi index file for @dbsnp is not found.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the .gz.tbi index file for @dbsnp is not found.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The .gz.tbi index file for @dbsnp is not found.')
             logging.info('No output file written. CAVA quit.')
@@ -992,9 +992,9 @@ def checkOptions(options):
     # Checking if @target file exists
     if not (options.args['target'] == '.' or options.args['target'] == '') and not os.path.isfile(
             options.args['target']):
-        print 'ERROR: the file given as @target does not exist.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the file given as @target does not exist.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The file given as @target does not exist.')
             logging.info('No output file written. CAVA quit.')
@@ -1003,9 +1003,9 @@ def checkOptions(options):
     # Checking if @target index file exists
     if not (options.args['target'] == '.' or options.args['target'] == '') and not os.path.isfile(
                     options.args['target'] + '.tbi'):
-        print 'ERROR: the .bed.tbi index file for @target is not found.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the .bed.tbi index file for @target is not found.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The .bed.tbi index file for @target is not found.')
             logging.info('No output file written. CAVA quit.')
@@ -1014,9 +1014,9 @@ def checkOptions(options):
     # Checking if @genelist file exists
     if not (options.args['genelist'] == '.' or options.args['genelist'] == '') and not os.path.isfile(
             options.args['genelist']):
-        print 'ERROR: the file given as @genelist does not exist.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the file given as @genelist does not exist.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The file given as @genelist does not exist.')
             logging.info('No output file written. CAVA quit.')
@@ -1025,9 +1025,9 @@ def checkOptions(options):
     # Checking if @transcriptlist file exists
     if not (options.args['transcriptlist'] == '.' or options.args['transcriptlist'] == '') and not os.path.isfile(
             options.args['transcriptlist']):
-        print 'ERROR: the file given as @transcriptlist does not exist.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the file given as @transcriptlist does not exist.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The file given as @transcriptlist does not exist.')
             logging.info('No output file written. CAVA quit.')
@@ -1036,9 +1036,9 @@ def checkOptions(options):
     # Checking if @snplist file exists
     if not (options.args['snplist'] == '.' or options.args['snplist'] == '') and not os.path.isfile(
             options.args['snplist']):
-        print 'ERROR: the file given as @snplist does not exist.'
-        print '\nNo output file written. CAVA quit.'
-        print "--------------------------------------------------------------------\n"
+        print('ERROR: the file given as @snplist does not exist.')
+        print('\nNo output file written. CAVA quit.')
+        print("--------------------------------------------------------------------\n")
         if options.args['logfile']:
             logging.error('The file given as @snplist does not exist.')
             logging.info('No output file written. CAVA quit.')

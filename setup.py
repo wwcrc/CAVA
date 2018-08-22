@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name= 'CAVA',
-    version = '1.2.3',
+    version = '2.0.0',
     description = 'CAVA (Clinical Annotation of VAriants)',
     url = 'https://github.com/RahmanTeam/CAVA',
     author = 'RahmanTeam',

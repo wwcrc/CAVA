@@ -5,7 +5,7 @@ from cava_ import main
 from cava_ import helper
 
 # Version
-version = 'v1.2.3'
+version = 'v2.0.0'
 
 # Read default configuration file name from the default_config_path file
 default_config_file = helper.defaultConfigPath()
