@@ -1,12 +1,10 @@
-from __future__ import division
 import os
 import datetime
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import gzip
 import pysam
 from operator import itemgetter
-
 
 # Class representing a transcript
 class Transcript(object):
@@ -22,8 +20,8 @@ class Transcript(object):
         self.POSEND = None
         self.GENETYPE = None
         self.TRANSTYPE = None
-        self.CODING_START = None
-        self.CODING_END = None
+        self.CODING_START = -1
+        self.CODING_END = -1
         self.CODING_START_RELATIVE = None
         self.CCDS = None
         self.EXONS = []
@@ -37,7 +35,7 @@ class Transcript(object):
         if self.STRAND == '1': ret = '+/'
         else: ret = '-/'
         cdna = self.getcDNALength()
-        return ret+str(round((self.POSEND-self.POS+1)/1000,1))+'kb/'+str(len(self.EXONS))+'/'+str(round(cdna/1000,1))+'kb/'+str(self.getProteinLength())
+        return ret+str(round((self.POSEND-self.POS+1) / 1000, 1))+'kb/'+str(len(self.EXONS))+'/'+str(round(cdna / 1000, 1))+'kb/'+str(self.getProteinLength())
 
 
     # Get cDNA length of the transcript
@@ -54,10 +52,14 @@ class Transcript(object):
             for exon in self.EXONS:
                 if exon.END < self.CODING_START: continue
                 if exon.START > self.CODING_END: continue
-                if exon.START <= self.CODING_START <= exon.END: start = self.CODING_START
-                else: start = exon.START + 1
-                if exon.START <= self.CODING_END <= exon.END: end = self.CODING_END
-                else: end = exon.END
+                if exon.START <= self.CODING_START <= exon.END: 
+                    start = self.CODING_START
+                else: 
+                    start = exon.START + 1
+                if exon.START <= self.CODING_END <= exon.END: 
+                    end = self.CODING_END
+                else: 
+                    end = exon.END
                 codingdna += end - start + 1
         else:
             for exon in self.EXONS:
@@ -73,8 +75,10 @@ class Transcript(object):
 
     # Check if it is a candidate transcript
     def isCandidate(self):
-        if not (self.GENETYPE=='protein_coding' and self.TRANSTYPE=='protein_coding'): return False
-        return (self.CODING_START is not None and self.CODING_END is not None) and self.isComplete
+        if not (self.GENETYPE=='protein_coding' and self.TRANSTYPE=='protein_coding'): 
+            return False
+        # return (self.CODING_START is not None and self.CODING_END is not None) and self.isComplete
+        return (self.CODING_START > -1 and self.CODING_END > -1) and self.isComplete
 
 
     # Output transcript
@@ -138,7 +142,7 @@ class Gene(object):
     def selectTranscript(self):
         ccds_set = []
         nonccds_set = []
-        for enst,transcript in self.TRANSCRIPTS.iteritems():
+        for enst,transcript in self.TRANSCRIPTS.items():
             if transcript.CCDS: ccds_set.append(transcript)
             else: nonccds_set.append(transcript)
 
@@ -157,17 +161,17 @@ class Gene(object):
     # Output all or selected transcripts
     def output(self, outfile, outfile_list, select, mcg_transcripts):
         if select:
-            if self.SYMBOL in mcg_transcripts.keys():
+            if self.SYMBOL in list(mcg_transcripts.keys()):
                 ok = False
-                for _,transcript in self.TRANSCRIPTS.iteritems():
+                for _,transcript in self.TRANSCRIPTS.items():
                     if transcript.ENST in mcg_transcripts[self.SYMBOL]:
                         transcript.output(outfile,outfile_list)
                         ok = True
-            if self.SYMBOL not in mcg_transcripts.keys() or not ok:
+            if self.SYMBOL not in list(mcg_transcripts.keys()) or not ok:
                 transcript = self.selectTranscript()
                 transcript.output(outfile,outfile_list)
         else:
-            for _,transcript in self.TRANSCRIPTS.iteritems():
+            for _,transcript in self.TRANSCRIPTS.items():
                 transcript.output(outfile,outfile_list)
 
 
@@ -209,11 +213,11 @@ def sortRecords(records, idx1, idx2):
     chroms = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', 'MT', 'X', 'Y']
     for i in range(len(chroms)):
         chrom = chroms[i]
-        if chrom in records.keys():
+        if chrom in list(records.keys()):
             records[chrom] = sorted(records[chrom], key=itemgetter(idx1,idx2))
     for i in range(len(chroms)):
         chrom = chroms[i]
-        if chrom in records.keys():
+        if chrom in list(records.keys()):
             for record in records[chrom]: ret.append(record)
     return ret
 
@@ -245,7 +249,7 @@ def process_data(options, genome_build, version):
         line = line.strip()
         if line == '': continue
         cols = line.split('\t')
-        if cols[0] not in mcg_transcripts.keys(): mcg_transcripts[cols[0]] = set()
+        if cols[0] not in list(mcg_transcripts.keys()): mcg_transcripts[cols[0]] = set()
         mcg_transcripts[cols[0]].add(cols[1])
     # Changing transcript for certain releases
     if int(options.ensembl)>=71: mcg_transcripts['BMPR1A'] = {'ENST00000372037'}
@@ -261,11 +265,11 @@ def process_data(options, genome_build, version):
     transIDs = set()
     if options.input is not None:
         transIDs = readTranscriptIDs(options.input)
-        print '\nOnly ' + str(len(transIDs)) + ' transcripts read from ' + options.input + ' are considered\n'
-    else: print '\nAll transcripts from the Ensembl release are considered\n'
+        print('\nOnly ' + str(len(transIDs)) + ' transcripts read from ' + options.input + ' are considered\n')
+    else: print('\nAll transcripts from the Ensembl release are considered\n')
 
     # Print out info
-    if options.select: print 'Transcript selection switched on\n'
+    if options.select: print('Transcript selection switched on\n')
 
     # Load candidate and CCDS data for Ensembl <75
     candidates = dict()
@@ -275,7 +279,7 @@ def process_data(options, genome_build, version):
             line=line.strip()
             if line=='': continue
             cols = line.split('\t')
-            if cols[0] not in candidates.keys(): candidates[cols[0]]=dict()
+            if cols[0] not in list(candidates.keys()): candidates[cols[0]]=dict()
             candidates[cols[0]][cols[1]]=int(cols[2])
 
     # Download Ensembl data
@@ -283,9 +287,9 @@ def process_data(options, genome_build, version):
     sys.stdout.flush()
     url = 'ftp://ftp.ensembl.org/pub/release-' + options.ensembl + '/gtf/homo_sapiens/Homo_sapiens.' + genome_build + '.' + options.ensembl + '.gtf.gz'
     try:
-        urllib.urlretrieve(url, 'ensembl_data.gz')
+        urllib.request.urlretrieve(url, 'ensembl_data.gz')
     except:
-        print '\n\nCannot connect to Ensembl FTP site. No internet connection?\n'
+        print('\n\nCannot connect to Ensembl FTP site. No internet connection?\n')
         quit()
 
     sys.stdout.write('OK\n')
@@ -296,7 +300,7 @@ def process_data(options, genome_build, version):
     first = True
     prevenst = ''
     transcript = None
-    for line in gzip.open('ensembl_data.gz', 'r'):
+    for line in gzip.open('ensembl_data.gz', 'rt'):
         line = line.strip()
         if line.startswith('#'): continue
         cols = line.split('\t')
@@ -322,7 +326,8 @@ def process_data(options, genome_build, version):
             if not first:
                 transcript.finalize()
                 if transcript.isCandidate():
-                    if transcript.ENSG not in genesdata.keys(): genesdata[transcript.ENSG] = Gene(transcript.GENE, transcript.ENSG)
+                    if transcript.ENSG not in list(genesdata.keys()): 
+                        genesdata[transcript.ENSG] = Gene(transcript.GENE, transcript.ENSG)
                     genesdata[transcript.ENSG].TRANSCRIPTS[transcript.ENST] = transcript
 
             # Initialize new Transcript object
@@ -358,20 +363,20 @@ def process_data(options, genome_build, version):
 
         if cols[2] == 'start_codon':
             if transcript.STRAND == '1':
-                if transcript.CODING_START is None or int(cols[3]) < transcript.CODING_START: transcript.CODING_START = int(cols[3])
+                if transcript.CODING_START < 0 or int(cols[3]) < transcript.CODING_START: transcript.CODING_START = int(cols[3])
             else:
-                if transcript.CODING_START is None or int(cols[4]) > transcript.CODING_START: transcript.CODING_START = int(cols[4])
+                if transcript.CODING_START < 0 or int(cols[4]) > transcript.CODING_START: transcript.CODING_START = int(cols[4])
 
         if cols[2] == 'stop_codon':
             if transcript.STRAND == '1':
-                if transcript.CODING_END is None or int(cols[4]) > transcript.CODING_END: transcript.CODING_END = int(cols[4])
+                if transcript.CODING_END < 0 or int(cols[4]) > transcript.CODING_END: transcript.CODING_END = int(cols[4])
             else:
-                if transcript.CODING_END is None or int(cols[3]) < transcript.CODING_END: transcript.CODING_END = int(cols[3])
+                if transcript.CODING_END < 0 or int(cols[3]) < transcript.CODING_END: transcript.CODING_END = int(cols[3])
 
         # Check if transcript is complete and is a CCDS transcript
         if transcript.isComplete is None:
             if int(options.ensembl) < 75:
-                if transcript.ENST in candidates[transcript.CHROM].keys():
+                if transcript.ENST in list(candidates[transcript.CHROM].keys()):
                     transcript.CCDS = (candidates[transcript.CHROM][transcript.ENST] == 1)
                     transcript.isComplete = True
                 else:
@@ -388,14 +393,14 @@ def process_data(options, genome_build, version):
     if transcript is not None:
         transcript.finalize()
         if transcript.isCandidate():
-            if transcript.ENSG not in genesdata.keys(): genesdata[transcript.ENSG] = Gene(transcript.GENE, transcript.ENSG)
+            if transcript.ENSG not in list(genesdata.keys()): genesdata[transcript.ENSG] = Gene(transcript.GENE, transcript.ENSG)
             genesdata[transcript.ENSG].TRANSCRIPTS[transcript.ENST] = transcript
 
     # If no transcript ID from the input file was found in the Ensembl release
     if len(genesdata) == 0:
-        print '\n\nNo transcripts from '+options.input+' found in Ensembl release.'
-        print '\nNo transcript database created.'
-        print "-----------------------------------------------------------------\n"
+        print('\n\nNo transcripts from '+options.input+' found in Ensembl release.')
+        print('\nNo transcript database created.')
+        print("-----------------------------------------------------------------\n")
         os.remove('ensembl_data.gz')
         quit()
 
@@ -408,7 +413,7 @@ def process_data(options, genome_build, version):
     outfile_list.write('ENSG\tGENE\tENST\n')
 
     # Output transcripts of each gene
-    for ensg, gene in genesdata.iteritems(): gene.output(outfile,outfile_list,options.select,mcg_transcripts)
+    for ensg, gene in genesdata.items(): gene.output(outfile,outfile_list,options.select,mcg_transcripts)
 
     # Close temporary output files
     outfile.close()
@@ -423,7 +428,7 @@ def process_data(options, genome_build, version):
         line.rstrip()
         record = line.split('\t')
         record[6] = int(record[6])
-        if record[4] in data.keys():
+        if record[4] in list(data.keys()):
             data[record[4]].append(record)
         else:
             data[record[4]] = []
@@ -472,18 +477,18 @@ def is_number(s):
 def run(options, version):
     # Checking if all required options specified
     if options.ensembl is None:
-        print '\nError: no Ensembl release specified. Use option -h to get help!\n'
+        print('\nError: no Ensembl release specified. Use option -h to get help!\n')
         quit()
     if not is_number(options.ensembl):
-        print '\nError: Ensembl release specified is not an integer. Use option -h to get help!\n'
+        print('\nError: Ensembl release specified is not an integer. Use option -h to get help!\n')
         quit()
     if options.output is None:
-        print '\nError: no output file name specified. Use option -h to get help!\n'
+        print('\nError: no output file name specified. Use option -h to get help!\n')
         quit()
 
     # Must use Ensembl release >= 70
     if not (int(options.ensembl) >= 70 or int(options.ensembl) == 65):
-        print '\nError: This version works with Ensembl v65 or >= v70.\n'
+        print('\nError: This version works with Ensembl v65 or >= v70.\n')
         quit()
 
     # Genome build
@@ -491,17 +496,17 @@ def run(options, version):
     genome_build = 'GRCh37' if int(options.ensembl) <= 75 else 'GRCh38'
 
     # Printing out version information
-    print "\n---------------------------------------------------------------------------------------"
-    print 'CAVA ' + version + ' transcript database preparation tool (ensembl_db) is now running'
-    print 'Started: ', datetime.datetime.now(), '\n'
+    print("\n---------------------------------------------------------------------------------------")
+    print('CAVA ' + version + ' transcript database preparation tool (ensembl_db) is now running')
+    print('Started: ', datetime.datetime.now(), '\n')
 
     # Print info
-    print 'Ensembl version:  ' + options.ensembl
-    print 'Reference genome: ' + genome_build
+    print('Ensembl version:  ' + options.ensembl)
+    print('Reference genome: ' + genome_build)
 
     # Creating compressed output file
     Nretrieved = process_data(options, genome_build, version)
-    print '\nA total of ' + str(Nretrieved) + ' transcripts have been retrieved\n'
+    print('\nA total of ' + str(Nretrieved) + ' transcripts have been retrieved\n')
 
     # Indexing output file with Tabix
     indexFile(options)
@@ -510,14 +515,14 @@ def run(options, version):
     os.remove(options.output)
 
     # Printing out summary information
-    print ''
-    print '---------------------'
-    print 'Output files created:'
-    print '---------------------'
-    print options.output + '.gz (transcript database)'
-    print options.output + '.gz.tbi (index file)'
-    print options.output + '.txt (list of transcripts)'
+    print('')
+    print('---------------------')
+    print('Output files created:')
+    print('---------------------')
+    print(options.output + '.gz (transcript database)')
+    print(options.output + '.gz.tbi (index file)')
+    print(options.output + '.txt (list of transcripts)')
 
-    print ''
-    print 'CAVA ensembl_db successfully finished: ', datetime.datetime.now()
-    print "---------------------------------------------------------------------------------------\n"
+    print('')
+    print('CAVA ensembl_db successfully finished: ', datetime.datetime.now())
+    print("---------------------------------------------------------------------------------------\n")
