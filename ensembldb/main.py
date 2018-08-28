@@ -149,11 +149,20 @@ class Gene(object):
         if len(ccds_set) > 0: candidates = ccds_set
         else: candidates = nonccds_set
 
+        # Sort candidates by ENST. In case there multiple selectable
+        # transcripts, the selected one does not depend on the order they are
+        # returned by .items()
+        candidates.sort(key=lambda x: x.ENST)
+        
         selected = Transcript()
         selected.PROTL = selected.CDNAL = -1
         for t in candidates:
-            if t.PROTL > selected.PROTL: selected = t
-            elif t.PROTL == selected.PROTL and t.CDNAL > selected.CDNAL: selected = t
+            # Note that we return the *last* selected candidate since we
+            # overwrite the variable `selected`.
+            if t.PROTL > selected.PROTL: 
+                selected = t
+            elif t.PROTL == selected.PROTL and t.CDNAL > selected.CDNAL: 
+                selected = t
 
         return selected
 
