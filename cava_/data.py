@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 # Classes providing interfaces with annotation databases and the reference genome
