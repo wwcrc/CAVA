@@ -13,3 +13,6 @@
 /*/*/__pycache__
 /*/*/*/__pycache__
 doc/sphinx/_build
+/test/tmp.*
+/test/hg38.fa
+/test/hg38.fa.fai
