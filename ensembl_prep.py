@@ -60,7 +60,7 @@ class Transcript(object):
         if self.STRAND == '1': ret = '+/'
         else: ret = '-/'
         cdna = self.getcDNALength()
-        return ret+str(round((self.POSEND-self.POS+1)/1000,1))+'kb/'+str(len(self.EXONS))+'/'+str(round(cdna/1000,1))+'kb/'+str(self.getProteinLength())
+        return ret+str(self.POSEND-self.POS+1)+'bp/'+str(len(self.EXONS))+'/'+str(cdna)+'bp/'+str(self.getProteinLength())
 
 
     # Get cDNA length of the transcript
@@ -495,7 +495,7 @@ def is_number(s):
 if __name__ == '__main__':
 
     # Version number
-    ver = 'v1.2.2'
+    ver = 'v1.2.2.ww1'
 
     # Command line argument parsing
     descr = 'ensembl_prep '+ver+' is a simple tool for generating the local Ensembl transcript database file used by CAVA (via the @ensembl option flag).'
