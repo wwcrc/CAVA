@@ -178,7 +178,9 @@ class Gene(object):
 
 
     # Output all or selected transcripts
+    # Return False if a selected transcript could not be found
     def output(self, outfile, outfile_list, select, mcg_transcripts):
+        found = True
         if select:
             if self.SYMBOL in mcg_transcripts.keys():
                 ok = False
@@ -186,12 +188,14 @@ class Gene(object):
                     if transcript.ENST in mcg_transcripts[self.SYMBOL]:
                         transcript.output(outfile,outfile_list)
                         ok = True
+                if not ok: found = False
             if self.SYMBOL not in mcg_transcripts.keys() or not ok:
                 transcript = self.selectTranscript()
                 transcript.output(outfile,outfile_list)
         else:
             for _,transcript in self.TRANSCRIPTS.iteritems():
                 transcript.output(outfile,outfile_list)
+        return found
 
 
 #######################################################################################################################
@@ -263,8 +267,10 @@ def run(ver, options, genome_build):
 
     # Read manually selected MCG transcripts from file
     dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+    if options.selectfile is None:
+        options.selectfile = dir+'/ensembl_prep/MCG_transcripts.txt'
     mcg_transcripts=dict()
-    for line in open(dir+'/ensembl_prep/MCG_transcripts.txt'):
+    for line in open(options.selectfile):
         line = line.strip()
         if line == '': continue
         cols = line.split('\t')
@@ -430,7 +436,10 @@ def run(ver, options, genome_build):
     outfile_list.write('ENSG\tGENE\tENST\n')
 
     # Output transcripts of each gene
-    for ensg, gene in genesdata.iteritems(): gene.output(outfile,outfile_list,options.select,mcg_transcripts)
+    missed = []
+    for ensg, gene in genesdata.iteritems():
+        if not gene.output(outfile,outfile_list,options.select,mcg_transcripts):
+            missed.append(gene.SYMBOL)
 
     # Close temporary output files
     outfile.close()
@@ -466,7 +475,7 @@ def run(ver, options, genome_build):
     sys.stdout.write('OK\n')
 
     # Return sorted records
-    return len(sortedRecords)
+    return len(sortedRecords), missed
 
 
 # Use Tabix to index output file     
@@ -495,7 +504,7 @@ def is_number(s):
 if __name__ == '__main__':
 
     # Version number
-    ver = 'v1.2.2.ww1'
+    ver = 'v1.2.2.ww2'
 
     # Command line argument parsing
     descr = 'ensembl_prep '+ver+' is a simple tool for generating the local Ensembl transcript database file used by CAVA (via the @ensembl option flag).'
@@ -507,6 +516,7 @@ if __name__ == '__main__':
     parser.add_option('-e', "--ens", default=None, dest='ensembl', action='store', help="Ensembl release version")
     #parser.add_option('-g', "--genome", dest='genome', action='store', default='GRCh37',help="Human genome reference version (default: %default)")
     parser.add_option('-s', "--select", default=False, dest='select', action='store_true',help="Select transcript for each gene [default: %default]")
+    parser.add_option('-S', "--select-file", default=None, dest='selectfile', action='store',help="Transcript selection filename (list of genes and ENST IDs)")
 
     (options, args) = parser.parse_args()
 
@@ -540,8 +550,12 @@ if __name__ == '__main__':
     print 'Reference genome: ' + genome_build
 
     # Creating compressed output file
-    Nretrieved = run(ver, options, genome_build)
+    (Nretrieved, missed) = run(ver, options, genome_build)
     print '\nA total of ' + str(Nretrieved) + ' transcripts have been retrieved\n'
+    if len(missed) > 0:
+        print 'Could not find selected transcripts for:'
+        print '\n'.join(sorted(missed))
+        print ''
 
     # Indexing output file with Tabix
     indexFile(options)
